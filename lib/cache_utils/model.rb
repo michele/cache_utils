@@ -4,12 +4,16 @@ module CacheUtils
 
     module ClassMethods
       def cache_key
-        to_s.pluralize.underscore + '/index'
+        to_s.underscore.pluralize + '/index'
       end
     end
 
     included do
       after_save :purge_cache
+    end
+
+    def custom_cache_key
+      self.class.to_s.underscore.pluralize + "/#{id}"
     end
 
     def purge_cache
