@@ -24,9 +24,13 @@ module CacheUtils
       end
     end
 
+    def serialize_for_cache(object, options = {})
+      ActiveModelSerializers::SerializableResource.new(object, options).to_json
+    end
+
     def render_with_cache(object, condition, name = {}, options = nil)
       render jsonapi: cache_if(condition, name, options) {
-                        ActiveModelSerializers::SerializableResource.new(object).to_json
+                        serialize_for_cache(object)
                       }, raw: true
     end
 
