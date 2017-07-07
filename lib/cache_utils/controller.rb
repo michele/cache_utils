@@ -25,7 +25,7 @@ module CacheUtils
     end
 
     def serialize_for_cache(object, options = {})
-      ActiveModelSerializers::SerializableResource.new(object, options).to_json
+      ActiveModelSerializers::SerializableResource.new(object, options)
     end
 
     def render_with_cache(object, condition, name = {}, options = nil)
