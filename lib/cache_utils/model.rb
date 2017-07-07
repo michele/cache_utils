@@ -17,7 +17,7 @@ module CacheUtils
     end
 
     def purge_cache
-      Rails.cache.data.del(*(Rails.cache.data.keys(cache_key) + [self.class.cache_key]))
+      Rails.cache.data.del(*(Rails.cache.data.keys(custom_cache_key) + [self.class.cache_key]))
     end
   end
 end
