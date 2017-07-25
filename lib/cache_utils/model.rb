@@ -17,7 +17,8 @@ module CacheUtils
     end
 
     def purge_cache
-      Rails.cache.data.del(*(Rails.cache.data.keys(custom_cache_key) + [self.class.cache_key]))
+      $redis.del(*($redis.scan_each(custom_cache_key + '*') + [self.class.cache_key]))
+      Appsignal.increment_counter('cache_purge', 1) if defined?(Appsignal)
     end
   end
 end

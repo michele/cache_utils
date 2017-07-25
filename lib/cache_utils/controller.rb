@@ -18,10 +18,22 @@ module CacheUtils
 
     def cache_if(condition, name = {}, options = nil, &block)
       if condition
-        Rails.cache.fetch(name, options, &block)
+        fetch_cache(name, options, &block)
       else
         yield
       end
+    end
+
+    def fetch_cache(key, _options = nil)
+      cached = $redis.get(key)
+      if cached
+        Appsignal.increment_counter('cache_hit', 1) if defined?(Appsignal)
+        return cached
+      end
+      Appsignal.increment_counter('cache_miss', 1) if defined?(Appsignal)
+      fresh = yield
+      $redis.set(key, fresh)
+      fresh
     end
 
     def serialize_for_cache(object, options = {})
@@ -51,19 +63,4 @@ module CacheUtils
       end.flatten.join('.'))
     end
   end
-end
-
-def serialize_hash(hash)
-  hash.to_a.sort_by { |k, _v| k.to_s }.map do |k, v|
-    val = if v.is_a?(Hash)
-            serialize_hash(v)
-          elsif v.is_a?(Array)
-            v.map(&:to_s).sort
-          elsif v.respond_to?(:cache_key)
-            v.cache_key
-          else
-            v.to_s
-    end
-    [k, val]
-  end.flatten.join('.')
 end
