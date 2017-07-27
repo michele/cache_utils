@@ -31,9 +31,11 @@ module CacheUtils
         return cached
       end
       Appsignal.increment_counter('cache_miss', 1) if defined?(Appsignal)
-      fresh = yield
-      $redis.set(key, fresh)
-      fresh
+      if block_given?
+        fresh = yield
+        $redis.set(key, fresh)
+        fresh
+      end
     end
 
     def serialize_for_cache(object, options = {})
