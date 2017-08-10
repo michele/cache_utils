@@ -24,6 +24,20 @@ module CacheUtils
       end
     end
 
+    def get_cache(key)
+      cached = $redis.get(key)
+      if cached
+        Appsignal.increment_counter('cache_hit', 1) if defined?(Appsignal)
+        return cached
+      end
+      Appsignal.increment_counter('cache_miss', 1) if defined?(Appsignal)
+      nil
+    end
+
+    def set_cache(key, content)
+      $redis.set(key, content)
+    end
+
     def fetch_cache(key, _options = nil)
       cached = $redis.get(key)
       if cached
