@@ -25,7 +25,7 @@ module CacheUtils
     end
 
     def get_cache(key)
-      cached = $redis.get(key)
+      cached = ($redisr || $redis).get(key)
       if cached
         Appsignal.increment_counter('cache_hit', 1) if defined?(Appsignal)
         return cached
@@ -35,11 +35,11 @@ module CacheUtils
     end
 
     def set_cache(key, content)
-      $redis.set(key, content)
+      ($redisw || $redis).set(key, content)
     end
 
     def fetch_cache(key, _options = nil)
-      cached = $redis.get(key)
+      cached = ($redisr || $redis).get(key)
       if cached
         Appsignal.increment_counter('cache_hit', 1) if defined?(Appsignal)
         return cached
@@ -47,7 +47,7 @@ module CacheUtils
       Appsignal.increment_counter('cache_miss', 1) if defined?(Appsignal)
       if block_given?
         fresh = yield
-        $redis.set(key, fresh)
+        ($redisw || $redis).set(key, fresh)
         fresh
       end
     end
