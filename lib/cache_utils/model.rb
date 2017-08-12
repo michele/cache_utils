@@ -19,8 +19,13 @@ module CacheUtils
     def purge_cache
       class_keys = self.class.cache_key
       class_keys += extra_class_key if respond_to?(:extra_class_key)
-      ($redisw || $redis).del(*(($redisr || $redis).scan_each(match: custom_cache_key + '*').to_a + ($redisr || $redis).scan_each(match: class_keys + '*').to_a))
-      Appsignal.increment_counter('cache_purge', 1) if defined?(Appsignal)
+      redisw = $redisw || $redis
+      redisr = $redisr || $redis
+      keys = (redisr.scan_each(match: custom_cache_key + '*').to_a + redisr.scan_each(match: class_keys + '*').to_a)
+      unless keys.empty?
+        redisw.del(*keys)
+        Appsignal.increment_counter('cache_purge', 1) if defined?(Appsignal)
+      end
     end
   end
 end
